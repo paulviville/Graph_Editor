@@ -21,7 +21,7 @@ function Renderer(map)
                 const colors = params.vertexColors;
 				map.foreach(vertex, 
 					vd => {
-						geometry.colors.push(colors[map.cell(vertex, vd)])
+						geometry.colors.push(colors[map.cell(vertex, vd)]);
 					});
 
                 material = new THREE.PointsMaterial(

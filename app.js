@@ -44,13 +44,19 @@ planey.rotation.y += Math.PI / 2;
 planez.rotation.z += Math.PI / 2;
 
 let graph = graph_from_geometry(import_cg(frame_cg));
+const position = graph.get_attribute(graph.vertex, "position");
 let graph_renderer = new Renderer(graph);
 graph_renderer.create_edges();
 graph_renderer.create_points();
 graph_renderer.add_edges(scene);
 graph_renderer.add_points(scene);
-let key_held = new Array(1024).fill(false);
 
+let selector = new Selector(graph);
+selector.create_points();
+scene.add(selector.points);
+
+
+let key_held = new Array(1024).fill(false);
 function onKeyDown(event)
 {
 	key_held[event.which] = true;
@@ -81,6 +87,7 @@ function onMouseUp(event)
     window.removeEventListener( 'mouseup', onMouseUp, false );
 }
 
+let selected = null;
 
 function onMouseMove(event)
 {
@@ -101,13 +108,16 @@ function onMouseMove(event)
 
 	if(intersections.length)
 	{
-		// console.log(intersections[0]);
 		plane.position.copy(intersections[0].point);
 		planex.position.copy(intersections[0].point);
 		planey.position.copy(intersections[0].point);
 		planez.position.copy(intersections[0].point);
-
+		selected.position.copy(intersections[0].point);
+		position[graph.cell(graph.vertex, selected.dart)].copy(intersections[0].point);
+		graph_renderer.update_points();
+		graph_renderer.update_edges();
 	}
+
 }
 
 function onMouseDown(event)
@@ -118,15 +128,17 @@ function onMouseDown(event)
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
 		raycaster.setFromCamera(mouse, camera);
-        let intersections = raycaster.intersectObjects([mesh_renderer.faces]);
+        let intersections = raycaster.intersectObjects(selector.points.children);
 
 		if(intersections.length)
 		{
-			console.log(intersections[0]);
+			console.log(intersections[0].object.dart);
 			plane.position.copy(intersections[0].point);
 			planex.position.copy(intersections[0].point);
 			planey.position.copy(intersections[0].point);
 			planez.position.copy(intersections[0].point);
+
+			selected = intersections[0].object;
 
 			window.addEventListener('mousemove', onMouseMove, false)
 			window.addEventListener('mouseup', onMouseUp, false);
@@ -161,14 +173,14 @@ let geo_info = load_off(octahedron_off); // stores the file as an array of vec3 
 let mesh = cmap2_from_geometry(geo_info); // creates the map from the geometric information
 
 
-let mesh_renderer = new Renderer(mesh);
-mesh_renderer.create_points({color: 0x110055});
-mesh_renderer.create_edges({color: 0x115500});
-mesh_renderer.create_faces();
+// let mesh_renderer = new Renderer(mesh);
+// mesh_renderer.create_points({color: 0x110055});
+// mesh_renderer.create_edges({color: 0x115500});
+// mesh_renderer.create_faces();
 
-mesh_renderer.add_points(scene);
-mesh_renderer.add_edges(scene);
-mesh_renderer.add_faces(scene);
+// mesh_renderer.add_points(scene);
+// mesh_renderer.add_edges(scene);
+// mesh_renderer.add_faces(scene);
 
 window.addEventListener('resize', function() {
     const width = window.innerWidth;

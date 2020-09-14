@@ -4,6 +4,28 @@ function Selector(map)
 	{
 		this.points_params = params;
 		
+		const vertex = map.vertex;
+		const position = map.get_attribute(vertex, "position");
+		
+		if(!position)
+			return false;
+
+		const geometry = new THREE.SphereGeometry(0.05, 3, 2);
+		const material = new THREE.MeshBasicMaterial({ 
+			transparent: true,
+			opacity: 0.25,
+		});
+
+		this.points = new THREE.Group();
+		map.foreach(vertex, vd => {
+			let sphere = new THREE.Mesh(geometry, material);
+			sphere.position.copy( position[map.cell(vertex, vd)]);
+			sphere.dart = vd;
+			this.points.add(sphere);
+		});
+
+		
+
 	}
 
 	this.create_edges = (!map.edge) ? undefined : function(params = {})
