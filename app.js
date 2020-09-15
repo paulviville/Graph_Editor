@@ -27,10 +27,10 @@ scene.add(pointLight);
 
 
 var geometry = new THREE.PlaneGeometry( 1, 1 );
-var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide, transparent: true, opacity: 0.125} );
-var materialx = new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide, transparent: true, opacity: 0.125} );
-var materialy = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide, transparent: true, opacity: 0.125} );
-var materialz = new THREE.MeshBasicMaterial( {color: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.125} );
+var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide, transparent: true, opacity: 0.025} );
+var materialx = new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide, transparent: true, opacity: 0.025} );
+var materialy = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide, transparent: true, opacity: 0.025} );
+var materialz = new THREE.MeshBasicMaterial( {color: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.025} );
 var plane = new THREE.Mesh( geometry, material );
 var planex = new THREE.Mesh( geometry, materialx );
 var planey = new THREE.Mesh( geometry, materialy );
@@ -54,7 +54,8 @@ graph_renderer.add_points(scene);
 let selector = new Selector(graph);
 selector.create_points();
 scene.add(selector.points);
-
+selector.create_edges();
+scene.add(selector.edges);
 
 let key_held = new Array(1024).fill(false);
 function onKeyDown(event)
@@ -67,8 +68,30 @@ function onKeyUp(event)
 	console.log(event.which);
 	key_held[event.which] = false;
     switch(event.which){
-		// case 67:
-		// 	break;
+		case 17:
+			selected_verts.length = 0;
+			break;
+		case 67:
+			let v0 = position[graph.cell(graph.vertex, selected_edge.dart)];
+			let v1 = position[graph.cell(graph.vertex, graph.alpha0[selected_edge.dart])];
+			let v = graph.cut_edge(selected_edge.dart);
+			position[graph.cell(graph.vertex, v)] = new THREE.Vector3().addVectors(v0, v1).multiplyScalar(0.5);
+			graph_renderer.update_points();
+			graph_renderer.update_edges();
+			selector.update_points();
+			selector.update_edges();
+			break;
+		case 68:
+			if(selected_edge)
+				graph.disconnect_vertices(selected_edge.dart, graph.alpha0[selected_edge.dart]);
+				selected_edge = null;
+				graph_renderer.update_points();
+				graph_renderer.update_edges();
+				selector.update_edges();
+			break;
+		case 69:
+			// selected_edge = null;
+			break;
         // case 71: // backspace
         //     break;
         default:
@@ -81,20 +104,24 @@ function onKeyUp(event)
 let raycaster = new THREE.Raycaster();
 let mouse = new THREE.Vector2();
 
-function onMouseUp(event)
+
+let selected_point = null;
+let selected_edge = null;
+let selected_verts = [];
+function onMouseUp_point(event)
 {
-	window.removeEventListener( 'mousemove', onMouseMove, false );
-    window.removeEventListener( 'mouseup', onMouseUp, false );
+	window.removeEventListener( 'mousemove', onMouseMove_point, false );
+    window.removeEventListener( 'mouseup', onMouseUp_point, false );
 }
 
-let selected = null;
 
-function onMouseMove(event)
+function onMouseMove_point(event)
 {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 	mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
 	raycaster.setFromCamera(mouse, camera);
+
 	let plane_inter = [];
 	if(key_held[88]) 
 		plane_inter.push(planex);
@@ -112,13 +139,16 @@ function onMouseMove(event)
 		planex.position.copy(intersections[0].point);
 		planey.position.copy(intersections[0].point);
 		planez.position.copy(intersections[0].point);
-		selected.position.copy(intersections[0].point);
-		position[graph.cell(graph.vertex, selected.dart)].copy(intersections[0].point);
-		graph_renderer.update_points();
-		graph_renderer.update_edges();
+		selected_point.position.copy(intersections[0].point);
+		position[graph.cell(graph.vertex, selected_point.dart)].copy(intersections[0].point);
+		graph_renderer.update_points_positions();
+		graph_renderer.update_edges_positions();
+		selector.update_points_positions();
+		selector.update_edges_positions();
 	}
 
 }
+
 
 function onMouseDown(event)
 {
@@ -126,22 +156,77 @@ function onMouseDown(event)
     {
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
+		selected_edge = null;
+		selected_point = null;
 		raycaster.setFromCamera(mouse, camera);
-        let intersections = raycaster.intersectObjects(selector.points.children);
-
-		if(intersections.length)
+		if(key_held[17])
 		{
-			console.log(intersections[0].object.dart);
-			plane.position.copy(intersections[0].point);
-			planex.position.copy(intersections[0].point);
-			planey.position.copy(intersections[0].point);
-			planez.position.copy(intersections[0].point);
+			let intersections = raycaster.intersectObjects(selector.points.children);
+			if(intersections.length)
+			{
+				selected_verts.push(intersections[0].object.dart);
+				console.log(selected_verts);
+				if(selected_verts.length == 2)
+				{
+					graph.connect_vertices(selected_verts[0], selected_verts[1]);
+					graph_renderer.update_edges();
+					graph_renderer.update_points();
+					selector.update_edges();
+					selected_verts = [selected_verts[1]];
+				}
+				
+			}
+		}
+		else if(key_held[68])
+		{
+			let intersections = raycaster.intersectObjects(selector.points.children);
+			if(intersections.length)
+			{
+				let vd = intersections[0].object.dart;
+				graph.delete_vertex(vd);
+				graph_renderer.update_edges();
+				graph_renderer.update_points();
+				selector.update_points();
+				selector.update_edges();
+				
+			}
+		}
+		else {
+			if(!key_held[69])
+			{			
+				let intersections = raycaster.intersectObjects(selector.points.children);
+				console.log(intersections);
+				console.log(selector.points.children);
+				if(intersections.length)
+				{
+					console.log(intersections[0].object.dart);
+					plane.position.copy(intersections[0].point);
+					planex.position.copy(intersections[0].point);
+					planey.position.copy(intersections[0].point);
+					planez.position.copy(intersections[0].point);
 
-			selected = intersections[0].object;
+					selected_point = intersections[0].object;
+					selected_edge = null;
 
-			window.addEventListener('mousemove', onMouseMove, false)
-			window.addEventListener('mouseup', onMouseUp, false);
+					window.addEventListener('mousemove', onMouseMove_point, false)
+					window.addEventListener('mouseup', onMouseUp_point, false);
+				}
+			}
+			else
+			{
+				let intersections = raycaster.intersectObjects(selector.edges.children);
+				if(intersections.length)
+				{
+					console.log(intersections[0].object.dart);
+					plane.position.copy(intersections[0].point);
+					planex.position.copy(intersections[0].point);
+					planey.position.copy(intersections[0].point);
+					planez.position.copy(intersections[0].point);
+
+					selected_edge = intersections[0].object;
+					selected_point = null;
+				}
+			}
 		}
 	}
 }
@@ -169,8 +254,8 @@ function loop()
     requestAnimationFrame(loop);
 }
 
-let geo_info = load_off(octahedron_off); // stores the file as an array of vec3 and an array of arrays of vertex indices
-let mesh = cmap2_from_geometry(geo_info); // creates the map from the geometric information
+// let geo_info = load_off(octahedron_off); // stores the file as an array of vec3 and an array of arrays of vertex indices
+// let mesh = cmap2_from_geometry(geo_info); // creates the map from the geometric information
 
 
 // let mesh_renderer = new Renderer(mesh);
@@ -178,6 +263,11 @@ let mesh = cmap2_from_geometry(geo_info); // creates the map from the geometric 
 // mesh_renderer.create_edges({color: 0x115500});
 // mesh_renderer.create_faces();
 
+// let i = 0;
+// graph.foreach(graph.edge, ed => {
+// 	i++;
+// });
+// console.log(i);
 // mesh_renderer.add_points(scene);
 // mesh_renderer.add_edges(scene);
 // mesh_renderer.add_faces(scene);

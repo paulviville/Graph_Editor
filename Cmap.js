@@ -1156,7 +1156,35 @@ function Graph()
 
 	this.cut_edge = function(ed, set_embeddings = true)
 		{
+			let ed0 = ed;
+			let ed1 = this.alpha0[ed];
 
+			let vd0 = this.new_dart();
+			let vd1 = this.new_dart();
+
+			this.sew_alpha1(vd0, vd1);
+			this.unsew_alpha0(ed0);
+			this.sew_alpha0(ed0, vd0);
+			this.sew_alpha0(ed1, vd1);
+
+			if(set_embeddings)
+			{
+				if(this.is_embedded(this.vertex))
+				{
+					let vid = this.new_cell(this.vertex);
+					this.set_embedding(this.vertex, vd0, vid);
+					this.set_embedding(this.vertex, vd1, vid);
+				}
+				if(this.is_embedded(this.edge))
+				{
+					this.set_embedding(this.edge, vd0, this.cell(this.edge, ed0));
+					let eid = this.new_cell(this.edge);
+					this.set_embedding(this.edge, vd1, eid);
+					this.set_embedding(this.edge, ed1, eid);
+				}
+			}
+
+			return vd0;
 		}
 
 	this.collapse_edge = function(ed, set_embeddings = true)
@@ -1394,7 +1422,6 @@ function import_cg(cg_str)
 function graph_from_geometry(geo_info = {v: [], e: []})
 {
 	let graph = new Graph;
-
 	const vertex = graph.vertex;
 	const edge = graph.edge;
 

@@ -49,11 +49,6 @@ function Renderer(map)
 					this.points.parent.remove(this.points);
 				}
 
-			this.update_points = function()
-				{
-					this.points.geometry.verticesNeedUpdate = true;
-				}
-
 			this.delete_points = function()
 				{
 					this.remove_points();
@@ -69,6 +64,11 @@ function Renderer(map)
 					this.delete_points();
 					this.create_points();
 					if(parent) parent.add(this.points);
+				}
+
+			this.update_points_positions = function()
+				{
+					this.points.geometry.verticesNeedUpdate = true;
 				}
 
 			return true;
@@ -159,6 +159,11 @@ function Renderer(map)
 					this.delete_edges();
 					this.create_edges(this.edges_params);
 					if(parent) parent.add(this.edges);
+				}
+
+			this.update_edges_positions = function()
+				{
+					this.edges.geometry.verticesNeedUpdate = true;
 				}
 		}
 
