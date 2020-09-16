@@ -24,20 +24,7 @@ let pointLight = new THREE.PointLight(0xFFEEDD, 0.8);
 pointLight.position.set(10,10,10);
 scene.add(pointLight);
 
-function saveData(data, fileName) {
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
 
-    var json = JSON.stringify(data),
-        blob = new Blob([data], {type: "text/plain;charset=utf-8"}),
-        url = window.URL.createObjectURL(blob);
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    window.URL.revokeObjectURL(url);
-
-}
 
 var geometry = new THREE.PlaneGeometry( 1, 1 );
 var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide, transparent: true, opacity: 0.025} );
@@ -55,13 +42,13 @@ scene.add( planez );
 planex.rotation.x += Math.PI / 2;
 planey.rotation.y += Math.PI / 2;
 planez.rotation.z += Math.PI / 2;
-// plane.material.visible = false;
-// planex.material.visible = false;
-// planey.material.visible = false;
-// planez.material.visible = false;
+plane.material.visible = false;
+planex.material.visible = false;
+planey.material.visible = false;
+planez.material.visible = false;
 
 let graph = graph_from_geometry(import_cg(cactus_cg));
-const position = graph.get_attribute(graph.vertex, "position");
+let position = graph.get_attribute(graph.vertex, "position");
 let graph_renderer = new Renderer(graph);
 graph_renderer.create_edges();
 graph_renderer.create_points();
@@ -378,49 +365,94 @@ function FileDroppedOnCanevas(func)
          }, false);
 }
 
+function get_bounding_box_mid()
+{
+	let v_min = undefined;
+	let v_max = undefined;
+	graph.foreach(graph.vertex, vd => {
+		if(!v_min)
+		{
+			v_min = position[graph.cell(graph.vertex, vd)].clone();
+			v_max = position[graph.cell(graph.vertex, vd)].clone();
+		}
+		else
+		{
+			let p = position[graph.cell(graph.vertex, vd)];
+			v_min.x = v_min.x > p.x ? p.x : v_min.x;
+			v_min.y = v_min.y > p.y ? p.y : v_min.y;
+			v_min.z = v_min.z > p.z ? p.z : v_min.z;
+
+			v_max.x = v_max.x < p.x ? p.x : v_max.x;
+			v_max.y = v_max.y < p.y ? p.y : v_max.y;
+			v_max.z = v_max.z < p.z ? p.z : v_max.z;
+		}
+	});
+
+	console.log(v_min, v_max);
+	let v = new THREE.Vector3().addVectors(v_min, v_max).multiplyScalar(0.5);
+	orbit_controls.target.copy(v);
+}
 
 
-// load(blob)
-// {
-// 	this.file_name = blob.name;
-// 	let reader = new FileReader();
-// 	return new Promise( (resolve, reject) =>
-// 	{
-// 		reader.onerror = () => 
-// 		{
-// 			reader.abort();
-// 			ewgl_common.console.error('can not load '+blob.name);
-// 			reject();
-// 		};
-// 		reader.onload = () => 
-// 		{
-// 			if (blob.name.match(/off|OFF$/)) 
-// 			{
-// 				resolve(this.OFF_load(reader.result));
-// 			}
-// 			else if (blob.name.match(/obj|OBJ$/)) 
-// 			{
-// 				resolve(this.OBJ_load_simple(reader.result));
-// 			}
-// 			else if (blob.name.match(/tet|TET$/)) 
-// 			{
-// 				resolve(this.TET_load(reader.result));
-// 			}
-// 			else if (blob.name.match(/mtl|MTL$/)) 
-// 			{
-// 				resolve(this.MTL_load(reader.result));
-// 			}
-// 			else
-// 			{
-// 				ewgl_common.console.error('can not load '+blob.name);
-// 				reject();
-// 			}       
-// 		};
-// 		reader.readAsText(blob);
-// 	});
-// }
-
-FileDroppedOnCanevas(data => {
+function load(blob)
+{
+	let file_name = blob.name;
 	let reader = new FileReader();
-	console.log(reader.result)});
+	return new Promise( (resolve, reject) =>
+	{
+		reader.onerror = () => 
+		{
+			reader.abort();
+			ewgl_common.console.error('can not load '+blob.name);
+			reject();
+		};
+		reader.onload = () => 
+		{
+			resolve(reader.result);
+		};
+		reader.readAsText(blob);
+	});
+}
+
+FileDroppedOnCanevas( (blob) =>
+{
+        load(blob).then((mesh) =>
+        {
+				graph = graph_from_geometry(import_cg(cactus_cg));
+				position = graph.get_attribute(graph.vertex, "position");
+				graph_renderer.delete_points();
+				graph_renderer.delete_edges();
+				graph_renderer = new Renderer(graph);
+				graph_renderer.create_edges();
+				graph_renderer.create_points();
+				graph_renderer.add_edges(scene);
+				graph_renderer.add_points(scene);
+
+				selector.delete_points();
+				selector.delete_edges();
+				selector = new Selector(graph);
+				selector.create_points();
+				scene.add(selector.points);
+				scene.add(selector.point_highlighter);
+				selector.create_edges();
+				scene.add(selector.edges);
+				scene.add(selector.edge_highlighter);
+        });
+});
+
+function saveData(data, fileName) {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+
+    var json = JSON.stringify(data),
+        blob = new Blob([data], {type: "cg/plain;charset=utf-8"}),
+        url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+}
+
 loop();

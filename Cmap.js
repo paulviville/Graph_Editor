@@ -1372,11 +1372,11 @@ function export_cg(graph)
 	graph.foreach(vertex, vd => {
 		pt = position[graph.cell(vertex, vd)];
 		vid[graph.cell(vertex, vd)] = id++;
-		cgr_str += "v " + pt.x + " " + pt.y + " " + pt.z + "\n";
+		cg_str += "v " + pt.x + " " + pt.y + " " + pt.z + "\n";
 	});
 
 	graph.foreach(edge, ed => {
-		cgr_str += "e " + vid[graph.cell(vertex, ed)] + " " + vid[graph.cell(vertex, graph.alpha0[ed])] + "\n";
+		cg_str += "e " + vid[graph.cell(vertex, ed)] + " " + vid[graph.cell(vertex, graph.alpha0[ed])] + "\n";
 	});
 
 	vid.delete();
