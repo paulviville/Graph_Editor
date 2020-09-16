@@ -24,7 +24,20 @@ let pointLight = new THREE.PointLight(0xFFEEDD, 0.8);
 pointLight.position.set(10,10,10);
 scene.add(pointLight);
 
+function saveData(data, fileName) {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
 
+    var json = JSON.stringify(data),
+        blob = new Blob([data], {type: "text/plain;charset=utf-8"}),
+        url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+}
 
 var geometry = new THREE.PlaneGeometry( 1, 1 );
 var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide, transparent: true, opacity: 0.025} );
@@ -42,8 +55,12 @@ scene.add( planez );
 planex.rotation.x += Math.PI / 2;
 planey.rotation.y += Math.PI / 2;
 planez.rotation.z += Math.PI / 2;
+// plane.material.visible = false;
+// planex.material.visible = false;
+// planey.material.visible = false;
+// planez.material.visible = false;
 
-let graph = graph_from_geometry(import_cg(frame_cg));
+let graph = graph_from_geometry(import_cg(cactus_cg));
 const position = graph.get_attribute(graph.vertex, "position");
 let graph_renderer = new Renderer(graph);
 graph_renderer.create_edges();
@@ -54,8 +71,10 @@ graph_renderer.add_points(scene);
 let selector = new Selector(graph);
 selector.create_points();
 scene.add(selector.points);
+scene.add(selector.point_highlighter);
 selector.create_edges();
 scene.add(selector.edges);
+scene.add(selector.edge_highlighter);
 
 let key_held = new Array(1024).fill(false);
 function onKeyDown(event)
@@ -70,24 +89,33 @@ function onKeyUp(event)
     switch(event.which){
 		case 17:
 			selected_verts.length = 0;
+			selector.unhighlight_point();
 			break;
 		case 67:
-			let v0 = position[graph.cell(graph.vertex, selected_edge.dart)];
-			let v1 = position[graph.cell(graph.vertex, graph.alpha0[selected_edge.dart])];
-			let v = graph.cut_edge(selected_edge.dart);
-			position[graph.cell(graph.vertex, v)] = new THREE.Vector3().addVectors(v0, v1).multiplyScalar(0.5);
-			graph_renderer.update_points();
-			graph_renderer.update_edges();
-			selector.update_points();
-			selector.update_edges();
+			if(selected_edge)
+			{
+				let v0 = position[graph.cell(graph.vertex, selected_edge.dart)];
+				let v1 = position[graph.cell(graph.vertex, graph.alpha0[selected_edge.dart])];
+				let v = graph.cut_edge(selected_edge.dart);
+				position[graph.cell(graph.vertex, v)] = new THREE.Vector3().addVectors(v0, v1).multiplyScalar(0.5);
+				graph_renderer.update_points();
+				graph_renderer.update_edges();
+				selector.update_points();
+				selector.update_edges();
+				selected_edge = null;
+				selector.unhighlight_edge();
+			}
 			break;
 		case 68:
 			if(selected_edge)
+			{
 				graph.disconnect_vertices(selected_edge.dart, graph.alpha0[selected_edge.dart]);
 				selected_edge = null;
 				graph_renderer.update_points();
 				graph_renderer.update_edges();
 				selector.update_edges();
+				selector.unhighlight_edge();
+			}
 			break;
 		case 69:
 			// selected_edge = null;
@@ -145,6 +173,7 @@ function onMouseMove_point(event)
 		graph_renderer.update_edges_positions();
 		selector.update_points_positions();
 		selector.update_edges_positions();
+		selector.highlight_point_update();
 	}
 
 }
@@ -165,7 +194,8 @@ function onMouseDown(event)
 			if(intersections.length)
 			{
 				selected_verts.push(intersections[0].object.dart);
-				console.log(selected_verts);
+				selector.highlight_point(intersections[0].object.dart);
+				selector.unhighlight_edge();
 				if(selected_verts.length == 2)
 				{
 					graph.connect_vertices(selected_verts[0], selected_verts[1]);
@@ -191,6 +221,20 @@ function onMouseDown(event)
 				
 			}
 		}
+		else if(key_held[77])
+		{
+			let intersections = raycaster.intersectObjects(selector.points.children);
+			if(intersections.length)
+			{
+				let vd = intersections[0].object.dart;
+				graph.merge_edges(vd);
+				graph_renderer.update_edges();
+				graph_renderer.update_points();
+				selector.update_points();
+				selector.update_edges();
+				
+			}
+		}
 		else {
 			if(!key_held[69])
 			{			
@@ -207,7 +251,8 @@ function onMouseDown(event)
 
 					selected_point = intersections[0].object;
 					selected_edge = null;
-
+					selector.highlight_point(selected_point.dart);
+					selector.unhighlight_edge();
 					window.addEventListener('mousemove', onMouseMove_point, false)
 					window.addEventListener('mouseup', onMouseUp_point, false);
 				}
@@ -224,7 +269,9 @@ function onMouseDown(event)
 					planez.position.copy(intersections[0].point);
 
 					selected_edge = intersections[0].object;
+					selector.highlight_edge(selected_edge.dart);
 					selected_point = null;
+					selector.unhighlight_point();
 				}
 			}
 		}
@@ -233,6 +280,50 @@ function onMouseDown(event)
 
 window.addEventListener( 'mousedown', onMouseDown, false );
 window.addEventListener( 'keydown', onKeyDown, false );
+
+
+
+let gui = new dat.GUI({autoPlace: true, hideable: false});
+
+let gui_params = {
+	x: 0,
+	y: 0,
+	z: 0,
+	add_vertex: function() 
+	{
+		let vd = graph.add_vertex();
+		position[graph.cell(graph.vertex, vd)] = new THREE.Vector3(this.x, this.y, this.z);
+		graph_renderer.update_edges();
+		graph_renderer.update_points();
+		selector.update_points();
+		selector.update_edges();
+	}
+};
+
+gui.add(gui_params, "x");
+gui.add(gui_params, "y");
+gui.add(gui_params, "z");
+gui.add(gui_params, "add_vertex");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function update ()
@@ -254,24 +345,6 @@ function loop()
     requestAnimationFrame(loop);
 }
 
-// let geo_info = load_off(octahedron_off); // stores the file as an array of vec3 and an array of arrays of vertex indices
-// let mesh = cmap2_from_geometry(geo_info); // creates the map from the geometric information
-
-
-// let mesh_renderer = new Renderer(mesh);
-// mesh_renderer.create_points({color: 0x110055});
-// mesh_renderer.create_edges({color: 0x115500});
-// mesh_renderer.create_faces();
-
-// let i = 0;
-// graph.foreach(graph.edge, ed => {
-// 	i++;
-// });
-// console.log(i);
-// mesh_renderer.add_points(scene);
-// mesh_renderer.add_edges(scene);
-// mesh_renderer.add_faces(scene);
-
 window.addEventListener('resize', function() {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -280,4 +353,74 @@ window.addEventListener('resize', function() {
     camera.updateProjectionMatrix();
 });
 
+
+function FileDroppedOnCanevas(func)
+{
+        canvas.addEventListener("dragenter", e =>
+        {
+                e.stopPropagation();
+                e.preventDefault();
+        }, false);
+
+        canvas.addEventListener("dragover",  e =>
+        {
+                e.stopPropagation();
+                e.preventDefault();
+        }, false);
+
+        canvas.addEventListener("drop", e =>
+        {
+                e.stopPropagation();
+                e.preventDefault();
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                func(files[0]);
+         }, false);
+}
+
+
+
+// load(blob)
+// {
+// 	this.file_name = blob.name;
+// 	let reader = new FileReader();
+// 	return new Promise( (resolve, reject) =>
+// 	{
+// 		reader.onerror = () => 
+// 		{
+// 			reader.abort();
+// 			ewgl_common.console.error('can not load '+blob.name);
+// 			reject();
+// 		};
+// 		reader.onload = () => 
+// 		{
+// 			if (blob.name.match(/off|OFF$/)) 
+// 			{
+// 				resolve(this.OFF_load(reader.result));
+// 			}
+// 			else if (blob.name.match(/obj|OBJ$/)) 
+// 			{
+// 				resolve(this.OBJ_load_simple(reader.result));
+// 			}
+// 			else if (blob.name.match(/tet|TET$/)) 
+// 			{
+// 				resolve(this.TET_load(reader.result));
+// 			}
+// 			else if (blob.name.match(/mtl|MTL$/)) 
+// 			{
+// 				resolve(this.MTL_load(reader.result));
+// 			}
+// 			else
+// 			{
+// 				ewgl_common.console.error('can not load '+blob.name);
+// 				reject();
+// 			}       
+// 		};
+// 		reader.readAsText(blob);
+// 	});
+// }
+
+FileDroppedOnCanevas(data => {
+	let reader = new FileReader();
+	console.log(reader.result)});
 loop();

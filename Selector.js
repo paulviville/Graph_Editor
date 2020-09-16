@@ -1,12 +1,23 @@
 function Selector(map)
 {
+	if(map.vertex)
+		this.point_highlighter = new THREE.Mesh(
+			new THREE.SphereGeometry(0.05, 16, 16),
+			new THREE.MeshLambertMaterial({
+				color: 0x00ee33,
+				transparent: true,
+				opacity: 0.5
+			})
+		);
+
+
     this.create_points = (!map.vertex) ? undefined : function(params = {})
 	{
 		this.points_params = params;
 
 		const vertex = map.vertex;
 		const position = map.get_attribute(vertex, "position");
-		
+
 		if(!position)
 			return false;
 
@@ -55,7 +66,38 @@ function Selector(map)
 				p.position.copy(position[map.cell(vertex, p.dart)]);
 			});
 		}
+
+
+		this.highlight_point = function(vd)
+		{
+			this.point_highlighter.dart = vd;
+			this.point_highlighter.position.copy(position[map.cell(vertex, vd)]);
+			this.point_highlighter.visible = true;
+
+		}
+
+		this.highlight_point_update = function()
+		{
+			this.point_highlighter.position.copy(position[map.cell(vertex, this.point_highlighter.dart)]);
+
+		}
+
+		this.unhighlight_point = function()
+		{
+			this.point_highlighter.visible = false;
+		}
+		this.unhighlight_point();
 	}
+
+	if(map.edge)
+	this.edge_highlighter = new THREE.Mesh(
+		new THREE.CylinderGeometry(0.035, 0.035, 1, 16),
+		new THREE.MeshLambertMaterial({
+			color: 0xeeee00,
+			transparent: true,
+			opacity: 0.5
+		})
+	);
 
 	this.create_edges = (!map.edge) ? undefined : function(params = {})
 	{
@@ -63,9 +105,9 @@ function Selector(map)
 		const vertex = map.vertex;
 		const edge = map.edge;
 		const position = map.get_attribute(vertex, "position");
-		
+
 		const geometry = new THREE.CylinderGeometry(0.025, 0.025, 1, 4);
-		const material = new THREE.MeshBasicMaterial({ 
+		const material = new THREE.MeshBasicMaterial({
 			color: 0xff00ff,
 			transparent: true,
 			opacity: 0.25,
@@ -77,7 +119,7 @@ function Selector(map)
 			let p0 = position[map.cell(vertex, ed)];
 			let p1 = position[map.cell(vertex, map.phi1[ed])];
 			let dir = new THREE.Vector3().subVectors(p0, p1);
-			
+
 			let len = dir.length();
 			let mid = new THREE.Vector3().addVectors(p0, p1).divideScalar(2);
 
@@ -85,7 +127,7 @@ function Selector(map)
 
 
 			let dirz = new THREE.Vector3().crossVectors(dirx, dir);
-			let m = new THREE.Matrix4().fromArray([	
+			let m = new THREE.Matrix4().fromArray([
 				dirx.x, dir.x, dirz.x, mid.x,
 				dirx.y, dir.y, dirz.y, mid.y,
 				dirx.z, dir.z, dirz.z, mid.z,
@@ -129,15 +171,15 @@ function Selector(map)
 				let p0 = position[map.cell(vertex, ed)];
 				let p1 = position[map.cell(vertex, map.phi1[ed])];
 				let dir = new THREE.Vector3().subVectors(p0, p1);
-				
+
 				let len = dir.length();
 				let mid = new THREE.Vector3().addVectors(p0, p1).divideScalar(2);
-	
+
 				let dirx = new THREE.Vector3().crossVectors(dir.normalize(), new THREE.Vector3(0,0,1));
-	
-	
+
+
 				let dirz = new THREE.Vector3().crossVectors(dirx, dir);
-				let m = new THREE.Matrix4().fromArray([	
+				let m = new THREE.Matrix4().fromArray([
 					dirx.x, dir.x, dirz.x, mid.x,
 					dirx.y, dir.y, dirz.y, mid.y,
 					dirx.z, dir.z, dirz.z, mid.z,
@@ -146,6 +188,47 @@ function Selector(map)
 				e.scale.set(1, len, 1);
 			});
 		}
+
+
+		this.highlight_edge = function(ed)
+		{
+			this.edge_highlighter.dart = ed;
+			this.edge_highlighter.visible = true;
+			this.highlight_edge_update();
+		}
+
+		this.highlight_edge_update = function()
+		{
+			// this.edge_highlighter.position.copy(position[map.cell(vertex, this.edge_highlighter.dart)]);
+
+			let m0 = new THREE.Matrix4().getInverse(this.edge_highlighter.matrix);
+			this.edge_highlighter.applyMatrix(m0);
+			let ed = this.edge_highlighter.dart;
+			let p0 = position[map.cell(vertex, ed)];
+			let p1 = position[map.cell(vertex, map.phi1[ed])];
+			let dir = new THREE.Vector3().subVectors(p0, p1);
+
+			let len = dir.length();
+			let mid = new THREE.Vector3().addVectors(p0, p1).divideScalar(2);
+
+			let dirx = new THREE.Vector3().crossVectors(dir.normalize(), new THREE.Vector3(0,0,1));
+
+
+			let dirz = new THREE.Vector3().crossVectors(dirx, dir);
+			let m = new THREE.Matrix4().fromArray([
+				dirx.x, dir.x, dirz.x, mid.x,
+				dirx.y, dir.y, dirz.y, mid.y,
+				dirx.z, dir.z, dirz.z, mid.z,
+				0, 0, 0, 1]).transpose();
+				this.edge_highlighter.applyMatrix(m);
+				this.edge_highlighter.scale.set(1, len, 1);
+		}
+
+		this.unhighlight_edge = function()
+		{
+			this.edge_highlighter.visible = false;
+		}
+		this.unhighlight_edge();
 	}
 
 	this.create_faces = (!map.face) ? undefined : function(params = {})
