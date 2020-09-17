@@ -110,6 +110,7 @@ function Selector(map)
 		const material = new THREE.MeshBasicMaterial({
 			color: 0xff00ff,
 			transparent: true,
+			visible: false,
 			opacity: 0.25,
 		});
 

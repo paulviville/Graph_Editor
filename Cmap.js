@@ -3,6 +3,7 @@
 function CMap_Base()
 {
 	const attributes_containers = [];
+	this.attributes_containers = attributes_containers;
 	const topology = {};
 	this.topology = topology;
 	const embeddings = [];
@@ -53,7 +54,9 @@ function CMap_Base()
 
 	this.delete_cell = function(emb, e)
 		{	
-			attributes_containers[emb].delete_element(e)	
+			attributes_containers[emb].delete_element(e);
+			if(embeddings[emb])
+				embeddings[emb][e] = null;	
 		}
 
 	this.create_embedding = function(emb)
@@ -85,6 +88,7 @@ function CMap_Base()
 	this.new_dart = function()
 		{
 			let new_id = this.new_cell(this.dart);
+			attributes_containers[this.dart].ref(new_id);
 			Object.values(topology).forEach(relation => relation[new_id] = new_id);
 			return new_id;
 		}
@@ -93,7 +97,10 @@ function CMap_Base()
 		{
 			for(let emb = 0; emb < attributes_containers.length; ++emb)
 				if(this.is_embedded(emb))
+				{
 					attributes_containers[emb].unref(embeddings[emb][d]);
+					embeddings[emb][d] = null;
+				}
 			topology.d[d] = -1;
 			attributes_containers[this.dart].delete_element(d);
 		}

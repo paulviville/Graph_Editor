@@ -102,7 +102,7 @@ function Attributes_Container()
 		{
 			console.log("nb_elements: ", nb_elements);
 			console.log("nb_attributes: ", this.nb_attributes());
-			console.log("free_ids: ", free_indices.size);
+			console.log("free_ids: ", free_indices.size, free_indices);
 			console.log("attributes", attributes);
 		}
 
@@ -112,4 +112,5 @@ function Attributes_Container()
 		}
 
 	refs = this.create_attribute("<refs>");
+	this.refs = refs;
 }
