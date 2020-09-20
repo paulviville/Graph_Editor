@@ -231,6 +231,8 @@ function Renderer(map)
 					material = new THREE.MeshLambertMaterial({
 						color:params.color || 0xBBBBBB,
 						side: params.side || THREE.FrontSide,
+						transparent: params.transparent || false,
+						opacity: params.opacity || 1
 						// wireframe: true
 					});
 			}

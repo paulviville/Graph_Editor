@@ -42,10 +42,10 @@ scene.add( planez );
 planex.rotation.x += Math.PI / 2;
 planey.rotation.y += Math.PI / 2;
 planez.rotation.z += Math.PI / 2;
-// plane.material.visible = false;
-// planex.material.visible = false;
-// planey.material.visible = false;
-// planez.material.visible = false;
+plane.material.visible = false;
+planex.material.visible = false;
+planey.material.visible = false;
+planez.material.visible = false;
 
 let graph = graph_from_geometry(import_cg(frame_cg));
 let position = graph.get_attribute(graph.vertex, "position");
@@ -372,10 +372,10 @@ gui.add(gui_params, "add_vertex");
 
 
 
-
-
-
-
+let surface_mesh = new CMap2();
+let surface_renderer = new Renderer(surface_mesh);
+// surface_renderer.create_edges();
+// surface_renderer.add_edges(scene);
 
 
 
@@ -497,6 +497,8 @@ FileDroppedOnCanevas( (blob) =>
 {
         load(blob).then((mesh) =>
         {
+			if(blob.name.match(/.cg/))
+			{
 				graph = graph_from_geometry(import_cg(mesh));
 				position = graph.get_attribute(graph.vertex, "position");
 				graph_renderer.delete_points();
@@ -516,6 +518,22 @@ FileDroppedOnCanevas( (blob) =>
 				selector.create_edges();
 				scene.add(selector.edges);
 				scene.add(selector.edge_highlighter);
+			}
+			if(blob.name.match(/.cgr/))
+				console.log("cgr file");
+			if(blob.name.match(/.off/))
+			{
+				if(surface_renderer.faces) surface_renderer.remove_faces();
+				// surface_renderer.remove_edges();
+				surface_mesh = cmap2_from_geometry(load_off(mesh));
+				surface_renderer = new Renderer(surface_mesh);
+				// surface_renderer.create_edges();
+				// surface_renderer.add_edges(scene);
+				
+				surface_renderer.create_faces({transparent: true, opacity: 0.25});
+				surface_renderer.add_faces(scene);
+
+			}	
         });
 });
 
