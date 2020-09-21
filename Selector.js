@@ -5,8 +5,8 @@ function Selector(map)
 			new THREE.SphereGeometry(0.05, 16, 16),
 			new THREE.MeshLambertMaterial({
 				color: 0x00ee33,
-				transparent: true,
-				opacity: 0.5
+				// transparent: true,
+				// opacity: 0.5
 			})
 		);
 
@@ -21,7 +21,7 @@ function Selector(map)
 		if(!position)
 			return false;
 
-		const geometry = new THREE.SphereGeometry(0.05, 4, 3);
+		const geometry = new THREE.SphereGeometry(0.025, 4, 3);
 		const material = new THREE.MeshBasicMaterial({
 			visible: false,
 			transparent: true,

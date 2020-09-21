@@ -299,10 +299,12 @@ function onMouseDown(event)
 				let intersections = raycaster.intersectObjects(selector.points.children);
 				if(intersections.length)
 				{
-					plane.position.copy(intersections[0].point);
-					planex.position.copy(intersections[0].point);
-					planey.position.copy(intersections[0].point);
-					planez.position.copy(intersections[0].point);
+					let vd = intersections[0].object.dart;
+					let p = position[graph.cell(graph.vertex, vd)];
+					plane.position.copy(p);
+					planex.position.copy(p);
+					planey.position.copy(p);
+					planez.position.copy(p);
 
 					if(key_held[81])
 					{
@@ -326,6 +328,13 @@ function onMouseDown(event)
 					window.addEventListener('mousemove', onMouseMove_point, false)
 					window.addEventListener('mouseup', onMouseUp_point, false);
 				
+				}
+				else{
+					selected_edge = null;
+					selected_point = null;
+					selector.unhighlight_edge();
+					selector.unhighlight_point();
+
 				}
 			}
 			else
