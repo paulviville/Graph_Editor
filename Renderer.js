@@ -34,7 +34,7 @@ function Renderer(map)
                 material = new THREE.PointsMaterial(
                     { 
                         color: params.color || 0xFF0000,
-                        size: params.size || 0.025
+                        size: params.size || 0.0025
                     });
 
 			this.points = new THREE.Points(geometry, material);

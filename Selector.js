@@ -2,7 +2,7 @@ function Selector(map)
 {
 	if(map.vertex)
 		this.point_highlighter = new THREE.Mesh(
-			new THREE.SphereGeometry(0.05, 16, 16),
+			new THREE.SphereGeometry(0.005, 16, 16),
 			new THREE.MeshLambertMaterial({
 				color: 0x00ee33,
 				// transparent: true,
@@ -21,7 +21,7 @@ function Selector(map)
 		if(!position)
 			return false;
 
-		const geometry = new THREE.SphereGeometry(0.025, 4, 3);
+		const geometry = new THREE.SphereGeometry(0.0025, 4, 3);
 		const material = new THREE.MeshBasicMaterial({
 			visible: false,
 			transparent: true,
@@ -91,7 +91,7 @@ function Selector(map)
 
 	if(map.edge)
 	this.edge_highlighter = new THREE.Mesh(
-		new THREE.CylinderGeometry(0.035, 0.035, 1, 16),
+		new THREE.CylinderGeometry(0.0035, 0.0035, 1, 16),
 		new THREE.MeshLambertMaterial({
 			color: 0xeeee00,
 			transparent: true,
