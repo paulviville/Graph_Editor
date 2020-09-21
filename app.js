@@ -98,7 +98,10 @@ function onKeyUp(event)
 				position[graph.cell(graph.vertex, v)] = new THREE.Vector3().addVectors(v0, v1).multiplyScalar(0.5);
 				graph_renderer.update_points();
 				graph_renderer.update_edges();
-				selector.update_points();
+				// selector.update_points();
+				selector.delete_points();
+				selector.create_points();
+				selector.add_points(scene);
 				selector.update_edges();
 				selected_edge = null;
 				selector.unhighlight_edge();
@@ -112,6 +115,9 @@ function onKeyUp(event)
 				graph_renderer.update_points();
 				graph_renderer.update_edges();
 				selector.update_edges();
+				selector.delete_points();
+				selector.create_points();
+				selector.add_points(scene);
 				selector.unhighlight_edge();
 			}
 			break;
