@@ -35,6 +35,7 @@ var plane = new THREE.Mesh( geometry, material );
 var planex = new THREE.Mesh( geometry, materialx );
 var planey = new THREE.Mesh( geometry, materialy );
 var planez = new THREE.Mesh( geometry, materialz );
+
 scene.add( plane );
 scene.add( planex );
 scene.add( planey );
@@ -46,6 +47,23 @@ plane.material.visible = false;
 planex.material.visible = false;
 planey.material.visible = false;
 planez.material.visible = false;
+
+
+/// frame
+var geom = new THREE.PlaneGeometry( 0.1, 0.1 );
+var mat_x = new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
+var mat_y = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
+var mat_z = new THREE.MeshBasicMaterial( {color: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
+var pl_x = new THREE.Mesh( geom, mat_x );
+var pl_y = new THREE.Mesh( geom, mat_y );
+var pl_z = new THREE.Mesh( geom, mat_z );
+scene.add( pl_x );
+scene.add( pl_y );
+scene.add( pl_z );
+pl_x.rotation.x += Math.PI / 2;
+pl_y.rotation.y += Math.PI / 2;
+pl_z.rotation.z += Math.PI / 2;
+
 
 let graph = graph_from_geometry(import_cg(frame_cg));
 let position = graph.get_attribute(graph.vertex, "position");
