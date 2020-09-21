@@ -1,7 +1,7 @@
 "use strict";
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xA0A0AA);
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000.0);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000.0);
 camera.position.set(0, 0, 2);
 const renderer = new THREE.WebGLRenderer();
 
@@ -51,9 +51,9 @@ planez.material.visible = false;
 
 /// frame
 var geom = new THREE.PlaneGeometry( 0.1, 0.1 );
-var mat_x = new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
-var mat_y = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
-var mat_z = new THREE.MeshBasicMaterial( {color: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
+var mat_x = new THREE.MeshBasicMaterial( {color: 0xff0000, side: THREE.DoubleSide, transparent: true, opacity: 0.05} );
+var mat_y = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide, transparent: true, opacity: 0.05} );
+var mat_z = new THREE.MeshBasicMaterial( {color: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.05} );
 var pl_x = new THREE.Mesh( geom, mat_x );
 var pl_y = new THREE.Mesh( geom, mat_y );
 var pl_z = new THREE.Mesh( geom, mat_z );
@@ -505,6 +505,17 @@ function get_bounding_box_mid()
 }
 get_bounding_box_mid();
 
+function get_average_edge()
+{
+	let nb_edges = graph.nb_cells(graph.edge);
+	let length_sums = new THREE.Vector3();
+	graph.foreach(graph.edge, ed => {
+
+			// v_min = position[graph.cell(graph.vertex, vd)].clone();
+			// v_max = position[graph.cell(graph.vertex, vd)].clone();
+
+	});
+}
 
 function load(blob)
 {
