@@ -13,10 +13,21 @@ renderer.setSize(width, height, false);
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild(renderer.domElement);
 
-let orbit_controls = new THREE.OrbitControls(camera, renderer.domElement);
-orbit_controls.enablePan = false;
-orbit_controls.update();
-orbit_controls.addEventListener('change', render);
+// let orbit_controls = new THREE.OrbitControls(camera, renderer.domElement);
+// orbit_controls.enablePan = false;
+// orbit_controls.update();
+// orbit_controls.addEventListener('change', render);
+
+let trackballcontrols = new THREE.TrackballControls(camera, renderer.domElement);
+trackballcontrols.addEventListener('change', render);
+trackballcontrols.rotateSpeed =2.0;
+trackballcontrols.zoomSpeed = 1.2;
+trackballcontrols.panSpeed = 0.8;
+trackballcontrols.noPan = true;
+trackballcontrols.target.set(0, 0, 0);
+console.log(trackballcontrols);
+
+
 
 let ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
 scene.add(ambientLight);
@@ -377,8 +388,8 @@ function onMouseDown(event)
 	}
 }
 
-window.addEventListener( 'mousedown', onMouseDown, false );
-window.addEventListener( 'keydown', onKeyDown, false );
+// window.addEventListener( 'mousedown', onMouseDown, false );
+// window.addEventListener( 'keydown', onKeyDown, false );
 
 
 
@@ -430,12 +441,13 @@ let surface_renderer = new Renderer(surface_mesh);
 
 
 
-
+let clock = new THREE.Clock();
 
 function update ()
 {
 	plane.rotation.copy(camera.rotation);
-
+	let delta = clock.getDelta();
+	trackballcontrols.update(delta);
 }
 
 function render()
@@ -510,7 +522,7 @@ function get_bounding_box_mid()
 
 	console.log(v_min, v_max);
 	bb_mid = new THREE.Vector3().addVectors(v_min, v_max).multiplyScalar(0.5);
-	orbit_controls.target.copy(bb_mid);
+	// orbit_controls.target.copy(bb_mid);
 }
 get_bounding_box_mid();
 
