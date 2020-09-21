@@ -522,7 +522,7 @@ function get_bounding_box_mid()
 
 	console.log(v_min, v_max);
 	bb_mid = new THREE.Vector3().addVectors(v_min, v_max).multiplyScalar(0.5);
-	// orbit_controls.target.copy(bb_mid);
+	trackballcontrols.target.copy(bb_mid);
 }
 get_bounding_box_mid();
 
