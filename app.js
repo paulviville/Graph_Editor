@@ -74,6 +74,7 @@ graph_renderer.add_edges(scene);
 graph_renderer.add_points(scene);
 
 let selector = new Selector(graph);
+
 selector.create_points();
 scene.add(selector.points);
 scene.add(selector.point_highlighter);
@@ -394,6 +395,11 @@ let gui_params = {
 		graph_renderer.update_points();
 		selector.update_points();
 		selector.update_edges();
+	},
+	fileNameCG: "",
+	save_cg: function()
+	{
+		saveData(export_cg(graph), this.fileNameCG);
 	}
 };
 
@@ -401,6 +407,8 @@ gui.add(gui_params, "x");
 gui.add(gui_params, "y");
 gui.add(gui_params, "z");
 gui.add(gui_params, "add_vertex");
+gui.add(gui_params, "fileNameCG");
+gui.add(gui_params, "save_cg");
 
 
 
@@ -508,13 +516,17 @@ get_bounding_box_mid();
 function get_average_edge()
 {
 	let nb_edges = graph.nb_cells(graph.edge);
-	let length_sums = new THREE.Vector3();
+	let length_sums = 0;
 	graph.foreach(graph.edge, ed => {
-
-			// v_min = position[graph.cell(graph.vertex, vd)].clone();
+		let v0 = position[graph.cell(graph.vertex, ed)].clone()
+		let v1 = position[graph.cell(graph.vertex, graph.alpha0[ed])].clone()
+		length_sums += v0.distanceTo(v1);
+		// v_min = position[graph.cell(graph.vertex, vd)].clone();
 			// v_max = position[graph.cell(graph.vertex, vd)].clone();
 
 	});
+	length_sums /= nb_edges;
+	return  length_sums;
 }
 
 function load(blob)

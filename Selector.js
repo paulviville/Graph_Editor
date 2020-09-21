@@ -21,9 +21,9 @@ function Selector(map)
 		if(!position)
 			return false;
 
-		const geometry = new THREE.SphereGeometry(0.0025, 4, 3);
+		const geometry = new THREE.SphereGeometry(params.size || 0.0025, 4, 3);
 		const material = new THREE.MeshBasicMaterial({
-			visible: false,
+			// visible: false,
 			transparent: true,
 			opacity: 0.25,
 		});
