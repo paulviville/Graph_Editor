@@ -75,13 +75,14 @@ graph_renderer.add_points(scene);
 
 let selector = new Selector(graph);
 
-selector.create_points();
+let el0 = get_average_edge(graph);
+selector.create_points({size: el0 / 5});
 scene.add(selector.points);
 scene.add(selector.point_highlighter);
-selector.create_edges();
+selector.create_edges({size: el0 / 5});
 scene.add(selector.edges);
 scene.add(selector.edge_highlighter);
-
+selector.modify_highlighters(el0 / 5);
 let key_held = new Array(1024).fill(false);
 function onKeyDown(event)
 {
