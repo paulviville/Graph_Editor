@@ -564,16 +564,17 @@ FileDroppedOnCanevas( (blob) =>
 				graph_renderer.create_points();
 				graph_renderer.add_edges(scene);
 				graph_renderer.add_points(scene);
-
+				let edge_len = get_average_edge();
 				selector.delete_points();
 				selector.delete_edges();
 				selector = new Selector(graph);
-				selector.create_points();
+				selector.create_points({size: edge_len / 5});
 				scene.add(selector.points);
 				scene.add(selector.point_highlighter);
-				selector.create_edges();
+				selector.create_edges({size: edge_len / 5});
 				scene.add(selector.edges);
 				scene.add(selector.edge_highlighter);
+				selector.modify_highlighters(edge_len / 4.5);
 			}
 			if(blob.name.match(/.cgr/))
 				console.log("cgr file");

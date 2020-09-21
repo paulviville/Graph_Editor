@@ -106,7 +106,7 @@ function Selector(map)
 		const edge = map.edge;
 		const position = map.get_attribute(vertex, "position");
 
-		const geometry = new THREE.CylinderGeometry(0.025, 0.025, 1, 4);
+		const geometry = new THREE.CylinderGeometry(params.size, params.size, 1, 4);
 		const material = new THREE.MeshBasicMaterial({
 			color: 0xff00ff,
 			transparent: true,
@@ -230,6 +230,51 @@ function Selector(map)
 			this.edge_highlighter.visible = false;
 		}
 		this.unhighlight_edge();
+	}
+
+
+	this.modify_highlighters = function (size)
+	{
+		if(map.vertex)
+		{
+			let parent =this.point_highlighter.parent;
+			if(parent)
+				parent.remove(this.point_highlighter);
+
+			this.point_highlighter = new THREE.Mesh(
+				new THREE.SphereGeometry(size, 16, 16),
+				new THREE.MeshLambertMaterial({
+					color: 0x00ee33,
+					// transparent: true,
+					// opacity: 0.5
+				})
+			);
+			
+			if(parent)
+				parent.add(this.point_highlighter);
+
+			this.point_highlighter.visible = false;
+				
+		}
+
+		if(map.edge)
+		{
+			parent =this.edge_highlighter.parent;
+			if(parent)
+				parent.remove(this.edge_highlighter);
+			this.edge_highlighter = new THREE.Mesh(
+				new THREE.CylinderGeometry(size * 0.75, size * 0.75, 1, 16),
+				new THREE.MeshLambertMaterial({
+					color: 0xeeee00,
+					transparent: true,
+					opacity: 0.5
+				})
+			);
+			if(parent)
+				parent.add(this.edge_highlighter);
+
+			this.edge_highlighter.visible = false;
+		}
 	}
 
 	this.create_faces = (!map.face) ? undefined : function(params = {})
