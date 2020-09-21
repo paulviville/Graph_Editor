@@ -484,8 +484,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	function onMouseDown( event ) {
 
-		event.preventDefault();
-		event.stopPropagation();
+		// event.preventDefault();
+		// event.stopPropagation();
 
 		if ( _state === STATE.NONE ) {
 

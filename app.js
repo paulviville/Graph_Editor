@@ -255,6 +255,8 @@ function onMouseMove_point_add(event)
 
 function onMouseDown(event)
 {
+	
+	console.log("there")
     if(event.buttons == 2)
     {
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -388,8 +390,9 @@ function onMouseDown(event)
 	}
 }
 
-// window.addEventListener( 'mousedown', onMouseDown, false );
-// window.addEventListener( 'keydown', onKeyDown, false );
+// trackballcontrols.dispose();
+window.addEventListener( 'mousedown', onMouseDown, false );
+window.addEventListener( 'keydown', onKeyDown, false );
 
 
 
@@ -522,7 +525,7 @@ function get_bounding_box_mid()
 
 	console.log(v_min, v_max);
 	bb_mid = new THREE.Vector3().addVectors(v_min, v_max).multiplyScalar(0.5);
-	trackballcontrols.target.copy(bb_mid);
+	// trackballcontrols.target.copy(bb_mid);
 }
 get_bounding_box_mid();
 
