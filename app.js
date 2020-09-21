@@ -566,7 +566,8 @@ FileDroppedOnCanevas( (blob) =>
 				surface_renderer.create_faces({transparent: true, opacity: 0.25});
 				surface_renderer.add_faces(scene);
 
-			}	
+			}
+			get_bounding_box_mid();	
         });
 });
 
