@@ -10,7 +10,7 @@ const width = canvas.clientWidth;
 const height = canvas.clientHeight;
 renderer.setSize(width, height, false);
 
-renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setSize( window.innerWidth, window.innerHeight, false);
 document.body.appendChild(renderer.domElement);
 
 // let orbit_controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -264,7 +264,15 @@ function onMouseDown(event)
 		selected_edge = null;
 		selected_point = null;
 		raycaster.setFromCamera(mouse, camera);
-		if(key_held[17])
+		if(key_held[16])
+		{
+			let intersections = raycaster.intersectObjects(selector.points.children);
+			if(intersections.length)
+			{
+				trackballcontrols.target.copy(position[graph.cell(graph.vertex, intersections[0].object.dart)]);
+			}
+		}
+		else if(key_held[17])
 		{
 			let intersections = raycaster.intersectObjects(selector.points.children);
 			if(intersections.length)
