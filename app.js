@@ -8,9 +8,9 @@ const renderer = new THREE.WebGLRenderer();
 const canvas = renderer.domElement;
 const width = canvas.clientWidth;
 const height = canvas.clientHeight;
-renderer.setSize(width, height, false);
+// renderer.setSize(width, height, false);
 
-renderer.setSize( window.innerWidth, window.innerHeight, false);
+renderer.setSize( window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // let orbit_controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -402,6 +402,35 @@ function onMouseDown(event)
 window.addEventListener( 'mousedown', onMouseDown, false );
 window.addEventListener( 'keydown', onKeyDown, false );
 
+function toggle_frame()
+{
+	pl_x.visible = gui_params.visible_frame;
+	pl_y.visible = gui_params.visible_frame;
+	pl_z.visible = gui_params.visible_frame;
+}
+
+function toggle_selector()
+{
+	selector.points.children.forEach(p => p.material.visible = gui_params.visible_selector);
+}
+
+function resize_selector()
+{
+	let edge_len = get_average_edge();
+	selected_edge = null;
+	selected_point = null;
+	selector.delete_points();
+	selector.delete_edges();
+	selector = new Selector(graph);
+	selector.create_points({size: edge_len / gui_params.selector_ratio});
+	scene.add(selector.points);
+	scene.add(selector.point_highlighter);
+	selector.create_edges({size: edge_len / gui_params.selector_ratio});
+	scene.add(selector.edges);
+	scene.add(selector.edge_highlighter);
+	selector.modify_highlighters(edge_len / gui_params.selector_ratio);
+	toggle_selector();
+}
 
 
 let gui = new dat.GUI({autoPlace: true, hideable: false});
@@ -423,7 +452,10 @@ let gui_params = {
 	save_cg: function()
 	{
 		saveData(export_cg(graph), this.fileNameCG);
-	}
+	},
+	visible_frame: true,
+	visible_selector: false,
+	selector_ratio: 4.5,
 };
 
 gui.add(gui_params, "x");
@@ -432,6 +464,9 @@ gui.add(gui_params, "z");
 gui.add(gui_params, "add_vertex");
 gui.add(gui_params, "fileNameCG");
 gui.add(gui_params, "save_cg");
+gui.add(gui_params, "visible_frame").onChange(toggle_frame);
+gui.add(gui_params, "visible_selector").onChange(toggle_selector);
+gui.add(gui_params, "selector_ratio", 1, 15).step(0.5).onChange(resize_selector);
 
 
 
@@ -589,13 +624,15 @@ FileDroppedOnCanevas( (blob) =>
 				graph_renderer.add_edges(scene);
 				graph_renderer.add_points(scene);
 				let edge_len = get_average_edge();
+				selected_edge = null;
+				selected_point = null;
 				selector.delete_points();
 				selector.delete_edges();
 				selector = new Selector(graph);
-				selector.create_points({size: edge_len / 5});
+				selector.create_points({size: edge_len / 4});
 				scene.add(selector.points);
 				scene.add(selector.point_highlighter);
-				selector.create_edges({size: edge_len / 5});
+				selector.create_edges({size: edge_len / 4});
 				scene.add(selector.edges);
 				scene.add(selector.edge_highlighter);
 				selector.modify_highlighters(edge_len / 4.5);
