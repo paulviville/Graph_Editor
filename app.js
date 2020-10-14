@@ -152,7 +152,10 @@ function onKeyUp(event)
 				selector.unhighlight_edge();
 			}
 			break;
-		case 69:
+		case 86:
+			trackballcontrols.target.copy(selected_point? 
+				position[graph.cell(graph.vertex, selected_point)] 
+				: get_bounding_box_mid());
 			// selected_edge = null;
 			break;
         // case 71: // backspace
@@ -533,7 +536,7 @@ function get_bounding_box_mid()
 
 	console.log(v_min, v_max);
 	bb_mid = new THREE.Vector3().addVectors(v_min, v_max).multiplyScalar(0.5);
-	// trackballcontrols.target.copy(bb_mid);
+	return bb_mid;	// trackballcontrols.target.copy(bb_mid);
 }
 get_bounding_box_mid();
 

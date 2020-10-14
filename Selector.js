@@ -94,7 +94,7 @@ function Selector(map)
 		new THREE.CylinderGeometry(0.0035, 0.0035, 1, 16),
 		new THREE.MeshLambertMaterial({
 			color: 0xeeee00,
-			transparent: true,
+			transparent: false,
 			opacity: 0.5
 		})
 	);
@@ -266,7 +266,7 @@ function Selector(map)
 				new THREE.CylinderGeometry(size * 0.75, size * 0.75, 1, 16),
 				new THREE.MeshLambertMaterial({
 					color: 0xeeee00,
-					transparent: true,
+					// transparent: true,
 					opacity: 0.5
 				})
 			);

@@ -6,7 +6,8 @@ function Attribute(array, attributes_container, name, length)
 	array.length = length;
 	array.delete = function()
 		{
-			attributes_container.remove_attribute(this.name)
+			attributes_container.remove_attribute(this.name);
+			this.length = 0;
 			this.delete = function(){};
 			this.name = "";
 		}
