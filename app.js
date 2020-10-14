@@ -136,6 +136,7 @@ function onKeyUp(event)
 				selector.update_edges();
 				selected_edge = null;
 				selector.unhighlight_edge();
+				resize_selector();
 			}
 			break;
 		case 68:
@@ -150,8 +151,12 @@ function onKeyUp(event)
 				selector.create_points();
 				selector.add_points(scene);
 				selector.unhighlight_edge();
-			}
+			resize_selector();
+		}
 			break;
+		case 81:
+			selector.unhighlight_point();
+			resize_selector();
 		case 86:
 			trackballcontrols.target.copy(selected_point? 
 				position[graph.cell(graph.vertex, selected_point)] 
@@ -305,7 +310,8 @@ function onMouseDown(event)
 				graph_renderer.update_points();
 				selector.update_points();
 				selector.update_edges();
-				
+				selector.unhighlight_point();
+				resize_selector();
 			}
 		}
 		else if(key_held[65])
@@ -320,6 +326,7 @@ function onMouseDown(event)
 				graph_renderer.update_points();
 				selector.update_points();
 				selector.update_edges();
+				resize_selector();
 				
 			}
 		}
